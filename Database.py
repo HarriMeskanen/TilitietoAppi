@@ -8,13 +8,7 @@ class Database:
         self.entries    = []
 
         # dict<String, Target>
-        self.targets    = {}
-
-        # list<Entry>
-        self.incomes    = []
-
-        # list<Entry>
-        self.expenses   = []
+        self.targets    = []
 
         # int
         self.number_of_entries  = 0
@@ -22,26 +16,26 @@ class Database:
         # int
         self.key_max_length     = 0
 
+
     def add_entry( self, entry ):
         self.entries.append( entry )
         self.number_of_entries += 1
-        if entry.val > 0:
-            self.incomes.append( entry )
-        else:
-            self.expenses.append( entry )
         if len(entry.target) > self.key_max_length:
             self.key_max_length = len(entry.target)
             
+
     def add_target( self, entry):
         # if target doesnt exist, make new
-        if entry.target not in self.targets:
-            target = Target.make_target( entry.target )
+        if entry.targetName not in self.targets:
+            target = Target.make_target( entry.targetName )
+            target.add_entry( entry )
         # else get existing one
         else:
             target = self.targets[entry.target]
         
         target.add_entry( entry )
         self.targets[entry.target] = target
+
 
 
 def make_database( data ):
