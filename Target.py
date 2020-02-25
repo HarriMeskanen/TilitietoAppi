@@ -1,4 +1,4 @@
-import formatting as frm
+
 
 class Target:
     def __init__( self, name ):
@@ -20,8 +20,6 @@ class Target:
         s = s + "YHT. \t" + str( format(self.sum, ".2f"))
         return s
 
-def make_target( target_name ):
-    if target_name != "":
-        return Target( target_name )
-    else: 
-        return None
+    def __len__(self): 
+        return len(self.name)
+

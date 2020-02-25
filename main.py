@@ -1,54 +1,27 @@
 import sys
-import Database as db
-import formatting as frm
+from Database import Database
+from io import IO
+import Utility as util
+import Analytics
 
-__DEBUG__ = False
+__DEBUG__ = True
 
-
-def get_data(file):
-    content = []
-    try:
-        file = open( file, "r", encoding="utf-8")
-    except:
-        print(frm.bcolors.FAIL + "File: " + file + " not found. Exiting.")
-        return
-    for row in file:
-        if row != "\n":
-            content.append(row)
-    file.close()
-    return content
-
-
-def save_data( fileName, data ):
-
-    if type(data) is list:
-        file = open( fileName + ".txt", "w", encoding="utf-8")
-        data = frm.format_list(data)
-        for alkio in data:
-            row = str(alkio) + "\n"
-            file.write( row )
-
-    elif type(data) is dict:
-        for key in data:
-            file.writelines(data[key])
-
-    else:
-        return
 
 
 
 def main(filename=None):
+    io = IO()
+    processor = Analytics.DataProcessor()
+    data = io.get_data( filename )
+    db = Database( data )
+    processor.dataset = db.get_all()
+    daatta = processor.get_net_income_and_expense()
+    print(util.bcolors.OKGREEN + "...\nProgram finished successfully... Exiting.")
 
-    data = get_data( filename )
-    if data == None:
-        return
-    database = db.make_database( data )
-    if database == None:
-        return
-    save_data(filename + "_parsittu", database.entries)
-    save_data(filename + "_kohteet", database.targets)
 
     
+
+
 
 if __name__ == "__main__":
     try:
