@@ -5,11 +5,9 @@ import Date
 import Utility 
 
 
-class Database: 
+class Database(Date.DateType): 
     def __init__( self, data ):
-        self.__locked           = False
-        self.__dateContainer    = Date.DateTypeContainer()
-        self.__targetContainer  = {}
+        super(Database, self).__init__(-1)
         self.number_of_entries  = 0
         self.number_of_targets  = 0
         self.key_max_length     = 0
@@ -34,42 +32,28 @@ class Database:
         print(Utility.bcolors.OKBLUE + "[Database.__init__][COMPLETE] Database build finished.\n\
         Number of transaction entries created: " + str(self.number_of_entries) + "\n\
         Number of transaction targets created: " + str(self.number_of_targets))
-        self.__locked = True
 
     def get_all(self):
-        return self.__dateContainer.get_all()
+        return self.children
 
-
-    def get_year(self, year):
-        return self.__dateContainer.get_year(year)
-
+    def get_year(self, year_number):
+        if year_number not in self:
+            return Date.Year(year_number)
+        return self.children[year_number]
 
     def get_month(self, year, month):
-        return self.__dateContainer.get_month(year, month)
-
+        year = self.get_year(year)        
+        return year.get_child(month)
 
     def get_day(self, year, month, day):
-        return self.__dateContainer.get_day(year, month, day)
-
+        month = self.get_month(year, month)
+        return month.get_child(day)
 
     def add_entry( self, entry ):
+        y = self.get_year(entry.date.year)
+        y.add_entry(entry)
+        self.children[entry.date.year] = y
+        self.entries.append(entry)
         self.number_of_entries += 1
-        self.__add_to_targetContainer( entry )
-        self.__dateContainer.add_entry( entry )
-                
-          
-    def __add_to_targetContainer(self, entry):
-        # if target doesnt exist, make new
-        if entry.get_target() not in self.__targetContainer:
-            target = Target( entry.targetName )
-            self.number_of_targets += 1
-            if len(target.name) > self.key_max_length:
-                self.key_max_length = len(target.name)
-        # else get existing one
-        else:
-            target = self.__targetContainer[entry.targetName]
-        # add entry to target
-        target.add_entry( entry )
-        # add target to database
-        self.__targetContainer[target.name] = target
+
 

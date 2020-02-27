@@ -19,7 +19,15 @@ class InvalidDataException(Exception):
     def __init__(self, message):
         self.message = "[InvalidDataException]" + message
 
-    
+
+ 
+
+def dict_plus_equals_value(container, key, value):
+        if key in container: 
+            if type(container[key]) is type(value):
+                container[key] += value
+        else:
+            container[key] = value   
 
 
 def justify_list_items( lst, format_char = " " ):

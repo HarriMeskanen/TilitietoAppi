@@ -2,49 +2,26 @@
 
 
 class DateType:
-    def __init__(self, instance_number):
-        # str
-        self.n        = instance_number
-        self.children = {}
-        self.entries  = []
+    def __init__(self):
+        pass
+    
+    def __init__(self, n):
+        # järj. luku
+        self.n          = int(n)
+        # sub datetypes e.g. this==Month --> children are Days
+        self.children   = {}
+        # entries created during datetype(this) period
+        self.entries    = []
 
     def __contains__(self, n):
         return n in self.children
 
-
-
-class DateTypeContainer:
-    def __init__(self):
-        self.container = {}
-        self.entries = []
-
-    def get_all(self):
-        return self.container
-
-    def get_year(self, year_number):
-        if year_number not in self.container:
-            return Year(year_number)
-        return self.container[year_number]
-
-    def get_month(self, year, month):
-        year = self.get_year(year)        
-        return year.get_child(month)
-
-    def get_day(self, year, month, day):
-        month = self.get_month(year, month)
-        return month.get_child(day)
-
-    def add_entry(self, entry):
-        y = self.get_year(entry.date.year)
-        y.add_entry(entry)
-        self.container[entry.date.year] = y
-        self.entries.append(entry)
-        
-
+   
 
 class Year(DateType):
     def __init__(self, year_number):
         super(Year, self).__init__(year_number)
+
 
     def get_month(self, month_number):
         if month_number not in self:
