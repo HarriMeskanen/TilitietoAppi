@@ -1,62 +1,99 @@
+from datetime import datetime
 
+
+
+def datetime_to_key(date):
+    if type(date) == type(datetime):
+        return Year.x_encode * date.year + Month.x_encode * date.month + Day.x_encode * date.day
 
 
 class DateType:
-    def __init__(self):
-        pass
-    
-    def __init__(self, n):
-        # järj. luku
-        self.n          = int(n)
-        # sub datetypes e.g. this==Month --> children are Days
+    x_encode = None
+    x_decode = None
+    def __init__(self, key=None, n=None):
+        # unique id e.g. 20201120
+        self.key  = key
+        # self is parent's nth children
+        self.n = n
+        # Map<n, DateType>, sub datetypes e.g. this==Month --> children are Days
         self.children   = {}
-        # entries created during datetype(this) period
+        # List<Entry>, entries created during datetype(this) period
         self.entries    = []
+
+    # VIRTUAL
+    def __child_factory(self, key):
+        return -1
+
+    # VIRTUAL
+    def __decode_key(self, key):
+        return int( (key - self.key) / self.x_decode )
+
+    def __encode_key(self, n):
+        return self.key + self.x_encode * n
 
     def __contains__(self, n):
         return n in self.children
 
-   
+    def __key_is_self(self, key):
+        return key == self.key
 
-class Year(DateType):
-    def __init__(self, year_number):
-        super(Year, self).__init__(year_number)
+    def __key_is_descendant(self, key):
+        return (self.key % key) == self.key
 
+    def __add_new_child(self, n):
+        key = self.__encode_key(n)
+        child = self.__child_factory(key)
+        self.children[n] = child
 
-    def get_month(self, month_number):
-        if month_number not in self:
-            self.children[month_number] = Month(month_number)
-        return self.children[month_number]
+    def get_child(self, n):
+        if n not in self:
+            self.__add_new_child(n)
+        return self.children[n]
 
     def add_entry(self, entry):
-        m = self.get_month(entry.date.month)
-        m.add_entry(entry)
-        self.children[entry.date.month] = m 
-        self.entries.append(entry)
+        entry_key = datetime_to_key(entry.date)
+
+        if self.__key_is_self(entry_key):
+            self.entries.append(entry)
+            return
+        
+        elif self.__key_is_descendant(entry_key):
+            c = self.get_child(entry.date.day)
+            c.add_entry(entry)
+            self.children[c.n] = c
+            self.entries.append(entry)
+        else:
+            return # shouldn't go here ever
+        
+
+
+
+class Year(DateType):
+    x_encode = 10000
+    x_decode = 100    
+    def __init__(self, key, n):
+        super(Year, self).__init__(key, n)  
+      
+    def __child_factory(self, key, n):
+        return Month(key, n) 
 
 
 
 class Month(DateType):
-    def __init__(self, month_number):
-        super(Month, self).__init__(month_number)
+    x_encode = 100
+    x_decode = 1 
+    def __init__(self, key, n):
+        super(Month, self).__init__(key, n)
 
-    def get_day(self, day_number):
-        if day_number not in self:
-            self.children[day_number] = Day(day_number)
-        return self.children[day_number]
-
-    def add_entry(self, entry):
-        d = self.get_day(entry.date.day)
-        d.add_entry(entry)
-        self.children[entry.date.day] = d
-        self.entries.append(entry)
+    def __child_factory(self, key, n):
+        return Day(key, n)
 
 
 
-class Day(DateType):    
-    def __init__(self, day_number):
-        super(Day, self).__init__(day_number)
+class Day(DateType):
+    x_encode = 1
+    def __init__(self, key, n):
+        super(Day, self).__init__(key, n)
+        
 
-    def add_entry(self, entry):
-        self.entries.append(entry)
 

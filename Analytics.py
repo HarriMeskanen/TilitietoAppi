@@ -22,7 +22,7 @@ class DataProcessor:
         return True
 
 
-    def process(self, resursion = False):
+    def process(self):
         for n, obj in self.data:
             self.__calculate_incomes_and_expenses(obj)
 
