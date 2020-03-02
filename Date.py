@@ -20,6 +20,9 @@ class DateType:
     def __child_factory(self, key):
         return 0
 
+    def generate_key(self, n):
+        return self.key + n * self.x
+
     # key --> my nth children
     def decode_key(self, key):
         return int( (key - self.key) / self.x )
@@ -37,34 +40,33 @@ class DateType:
     def __add_new_child(self, n):
         key = self.encode_key(n)
         child = self.__child_factory(key)
-        self.children[n] = child
+        self.children[key] = child
 
     def get_child(self, key):
         key_masked = self.decode_key(key)
         if key_masked not in self:
             self.__add_new_child(key)
-        return self.children[n]
+        return self.children[key]
 
-    def add_entry(self, entry, entry_key):
-        if self.__key_is_self(entry_key):
+    def add_entry(self, entry, key):
+        if self.__key_is_self(key):
             self.entries.append(entry)
             return
         
-        elif self.__key_is_descendant(entry_key):
-            c = self.get_child(entry.date.day)
+        elif self.__key_is_descendant(key):
+            c = self.get_child(key)
             c.add_entry(entry)
-            self.children[c.n] = c
+            self.children[key] = c
             self.entries.append(entry)
 
         else:
-            return # shouldn't go here ever
+            return # shouldn't go here, ever
         
 
 
 
 class Year(DateType):
-    x_encode = 10000
-    x_decode = 100    
+    x = 100    
     def __init__(self, key, n):
         super(Year, self).__init__(key, n)  
       
@@ -74,8 +76,7 @@ class Year(DateType):
 
 
 class Month(DateType):
-    x_encode = 100
-    x_decode = 1 
+    x = 1 
     def __init__(self, key, n):
         super(Month, self).__init__(key, n)
 
@@ -85,7 +86,6 @@ class Month(DateType):
 
 
 class Day(DateType):
-    x_encode = 1
     def __init__(self, key, n):
         super(Day, self).__init__(key, n)
         
