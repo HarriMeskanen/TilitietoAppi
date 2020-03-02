@@ -1,8 +1,9 @@
 
 from Entry import Entry
 from Target import Target
-import Date
+from Date import *
 import Utility 
+from datetime import datetime
 
 
 class Database(Date.DateType): 
@@ -33,10 +34,16 @@ class Database(Date.DateType):
         Number of transaction entries created: " + str(self.number_of_entries) + "\n\
         Number of transaction targets created: " + str(self.number_of_targets))
 
+        
+    def datetime_to_key(self, date):
+        if type(date) == type(datetime):
+            return Year.x_encode * date.year + Month.x_encode * date.month + Day.x_encode * date.day
+
     def get_all(self):
         return self.children
 
     def get_year(self, year_number):
+        key = Year.encode_key(year_number)
         if year_number not in self:
             return Date.Year(year_number)
         return self.children[year_number]
@@ -50,6 +57,7 @@ class Database(Date.DateType):
         return month.get_child(day)
 
     def add_entry( self, entry ):
+        key = self.datetime_to_key(entry.date)
         y = self.get_year(entry.date.year)
         y.add_entry(entry)
         self.children[entry.date.year] = y

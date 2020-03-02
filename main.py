@@ -17,9 +17,9 @@ def main(filename=None):
     processor = Analytics.DataProcessor()
     years = db.get_all()
     for year, year_data in years:
-        processor.set_dataset( year_data )
+        processor.set_data( year_data )
         processor.process()
-        io.save_data(year + ".txt" )
+        io.save_data(year + ".txt", year_data )
 
     print(util.bcolors.OKGREEN + "...\nProgram finished successfully... Exiting.")
 

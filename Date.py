@@ -1,38 +1,32 @@
-from datetime import datetime
 
-
-
-def datetime_to_key(date):
-    if type(date) == type(datetime):
-        return Year.x_encode * date.year + Month.x_encode * date.month + Day.x_encode * date.day
 
 
 class DateType:
-    x_encode = None
-    x_decode = None
+    x = 0
     def __init__(self, key=None, n=None):
         # unique id e.g. 20201120
         self.key  = key
         # self is parent's nth children
         self.n = n
-        # Map<n, DateType>, sub datetypes e.g. this==Month --> children are Days
+        # Map<date_key, DateType>, sub datetypes e.g. this==Month --> children are Days
         self.children   = {}
         # List<Entry>, entries created during datetype(this) period
         self.entries    = []
 
+    def __contains__(self, key):
+        return key in self.children
+
     # VIRTUAL
     def __child_factory(self, key):
-        return -1
+        return 0
 
-    # VIRTUAL
-    def __decode_key(self, key):
-        return int( (key - self.key) / self.x_decode )
+    # key --> my nth children
+    def decode_key(self, key):
+        return int( (key - self.key) / self.x )
 
-    def __encode_key(self, n):
-        return self.key + self.x_encode * n
-
-    def __contains__(self, n):
-        return n in self.children
+    # generate key for nth child
+    def encode_key(self, key):
+        return self.key + self.decode_key(key) * self.x
 
     def __key_is_self(self, key):
         return key == self.key
@@ -41,18 +35,17 @@ class DateType:
         return (self.key % key) == self.key
 
     def __add_new_child(self, n):
-        key = self.__encode_key(n)
+        key = self.encode_key(n)
         child = self.__child_factory(key)
         self.children[n] = child
 
-    def get_child(self, n):
-        if n not in self:
-            self.__add_new_child(n)
+    def get_child(self, key):
+        key_masked = self.decode_key(key)
+        if key_masked not in self:
+            self.__add_new_child(key)
         return self.children[n]
 
-    def add_entry(self, entry):
-        entry_key = datetime_to_key(entry.date)
-
+    def add_entry(self, entry, entry_key):
         if self.__key_is_self(entry_key):
             self.entries.append(entry)
             return
@@ -62,6 +55,7 @@ class DateType:
             c.add_entry(entry)
             self.children[c.n] = c
             self.entries.append(entry)
+
         else:
             return # shouldn't go here ever
         
