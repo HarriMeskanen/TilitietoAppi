@@ -34,7 +34,7 @@ def justify_list_items( lst, format_char = " " ):
     justified = []
     for item in lst:
         justified.append( item.targetName + format_char * ( key_max_length - len(item) ) ) 
-    return justified
+    return justified, key_max_length
 
 
 def get_entry_data( raw_data ):

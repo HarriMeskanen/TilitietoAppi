@@ -33,8 +33,8 @@ class DataProcessor:
             if not isinstance(item, DateType) or isinstance(item, Day):
                 break
 
-            self.__save_transactions(item)
             self.__calculate_incomes_and_expenses(item)
+            self.__save_transactions(item)
             #
             # CALCULATE OTHER STUFF
             #
@@ -45,11 +45,15 @@ class DataProcessor:
 
 
     def __save_transactions(self, item):
-        targets = util.justify_list_items(item.entries)
+        targets, kml = util.justify_list_items(item.entries)
         t = []
         for ii, e in enumerate(item.entries):
             e_str = e.get_date() + "\t" + targets[ii] + e.get_val_str()
             t.append(e_str)
+        t.append("--" * kml)
+        t.append("INCOMES " + " " * kml + "\t+" + str(format(self.incomes[item.key_str],  '.2f')))
+        t.append("EXPENSES" + " " * kml + "\t"  + str(format(self.expenses[item.key_str], '.2f')))
+        t.append("SUM     " + " " * kml + "\t"  + str(format(self.netsum[item.key_str],   '.2f')))
         self.transactions[item.key_str] = t
 
 
