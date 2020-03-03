@@ -1,10 +1,11 @@
- 
+import os
 import Utility as util
+from Date import DateType
 
 
 class IO:
     def __init__(self):
-        pass
+        self.outputFolder = os.getcwd() + r'\output'
 
 
     def get_data(self, file):
@@ -21,17 +22,13 @@ class IO:
         return content
 
 
-    def save_data(self, fileName, data ):
-
-        if type(data) is list:
-            file = open( fileName + ".txt", "w", encoding="utf-8")
-            data = util.justify_list_items(data)
-            for alkio in data:
-                row = str(alkio) + "\n"
+    def write_dict_to_file(self, d, filename_prefix = ""):
+        for key, value in d.items():
+            filepath = self.outputFolder + "\\" + key
+            if not os.path.exists(filepath):
+                os.makedirs(filepath)
+            file = open( filepath + "\\" + filename_prefix + key + ".txt", "w", encoding="utf-8")
+            for elem in value:
+                row = elem + "\n"
                 file.write( row )
-
-        elif type(data) is dict:
-            for key in data:
-                file.writelines(data[key])
-        else:
-            return
+            file.close()

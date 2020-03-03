@@ -1,8 +1,8 @@
 import sys
 from Database import Database
+from DataProcessor import DataProcessor
 import IO
 import Utility as util
-import Analytics
 
 __DEBUG__ = True
 
@@ -14,12 +14,11 @@ def main(filename=None):
     data = io.get_data( filename )
     db = Database( data )
 
-    processor = Analytics.DataProcessor()
-    years = db.get_all()
-    for year, year_data in years:
-        processor.set_data( year_data )
-        processor.process()
-        io.save_data(year + ".txt", year_data )
+    prcsr = DataProcessor()
+    prcsr.set_data( db.get_all() )
+    prcsr.process()
+
+    io.write_dict_to_file(prcsr.transactions, "catalog_")
 
     print(util.bcolors.OKGREEN + "...\nProgram finished successfully... Exiting.")
 

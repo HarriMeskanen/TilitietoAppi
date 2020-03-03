@@ -1,4 +1,4 @@
-
+import numpy as np
 
 
 class DateType:
@@ -6,6 +6,7 @@ class DateType:
     def __init__(self, key=None, n=None):
         # unique id e.g. 20201120
         self.key  = key
+        self.key_str = self.__key_str__()
         # self is parent's nth children
         self.n = n
         # Map<date_key, DateType>, sub datetypes e.g. this==Month --> children are Days
@@ -13,21 +14,34 @@ class DateType:
         # List<Entry>, entries created during datetype(this) period
         self.entries    = []
 
-    def __contains__(self, key):
-        return key in self.children
+    def __str__(self):
+        return self.key_str
+
+    def __key_str__(self):
+        key_str = str(self.key)
+        if len(key_str) != 8:
+            return key_str
+        key_lst = np.array([key_str[6:8], key_str[4:6], key_str[0:4]]).astype(int)
+        key_lst = key_lst[key_lst > 0].astype(str)
+        return ".".join(key_lst)
 
     # VIRTUAL
-    def __child_factory(self, key):
+    def child_factory(self, key, n):
         return 0
-
+    
+    # generate key for nth child
     def generate_key(self, n):
         return self.key + n * self.x
+
+    def mask_key(self, key):
+        n = self.decode_key(key)
+        return self.generate_key(n)
 
     # key --> my nth children
     def decode_key(self, key):
         return int( (key - self.key) / self.x )
 
-    # generate key for nth child
+    # generate key (from key) for nth child
     def encode_key(self, key):
         return self.key + self.decode_key(key) * self.x
 
@@ -37,16 +51,16 @@ class DateType:
     def __key_is_descendant(self, key):
         return (self.key % key) == self.key
 
-    def __add_new_child(self, n):
-        key = self.encode_key(n)
-        child = self.__child_factory(key)
+    def __add_new_child(self, key):
+        n = self.decode_key(key)
+        child = self.child_factory(key, n)
         self.children[key] = child
 
     def get_child(self, key):
-        key_masked = self.decode_key(key)
-        if key_masked not in self:
-            self.__add_new_child(key)
-        return self.children[key]
+        child_key = self.mask_key(key)
+        if child_key not in self.children:
+            self.__add_new_child(child_key)
+        return self.children[child_key]
 
     def add_entry(self, entry, key):
         if self.__key_is_self(key):
@@ -55,8 +69,8 @@ class DateType:
         
         elif self.__key_is_descendant(key):
             c = self.get_child(key)
-            c.add_entry(entry)
-            self.children[key] = c
+            c.add_entry(entry, key)
+            self.children[c.key] = c
             self.entries.append(entry)
 
         else:
@@ -70,7 +84,7 @@ class Year(DateType):
     def __init__(self, key, n):
         super(Year, self).__init__(key, n)  
       
-    def __child_factory(self, key, n):
+    def child_factory(self, key, n):
         return Month(key, n) 
 
 
@@ -80,7 +94,7 @@ class Month(DateType):
     def __init__(self, key, n):
         super(Month, self).__init__(key, n)
 
-    def __child_factory(self, key, n):
+    def child_factory(self, key, n):
         return Day(key, n)
 
 

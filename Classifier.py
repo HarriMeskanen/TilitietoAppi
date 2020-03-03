@@ -27,11 +27,11 @@ class CategoryClassifier:
         pass
 
     def train(self, data, label):
-        if type(data) is type(Entry):
+        if isinstance(data, Entry):
             f = np.array(self.__extract_features(data))
             self.data[label] = np.vstack(( self.data[label], f ))
 
-        elif type(data) is type(list):
+        elif isinstance(data, list):
             for ii, entry in enumerate(data):
                 f = np.array(self.__extract_features(entry))
                 label_ii = label[ii]

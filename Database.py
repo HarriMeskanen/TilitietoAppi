@@ -1,7 +1,7 @@
 
 from Entry import Entry
 from Target import Target
-from Date import *
+from Date import DateType, Year, Month, Day
 import Utility 
 from datetime import datetime
 
@@ -9,7 +9,7 @@ from datetime import datetime
 class Database(DateType): 
     x = 10000
     def __init__( self, data ):
-        super(Database, self).__init__(-1)
+        super(Database, self).__init__(0)
         self.number_of_entries  = 0
         self.number_of_targets  = 0
         self.key_max_length     = 0
@@ -21,7 +21,8 @@ class Database(DateType):
                 # create new entry
                 entry = Entry(date, val, targetName)
                 # add entry to database
-                self.add_entry( entry )
+                entry_key = self.datetime_to_key(entry.date)
+                self.add_entry( entry, entry_key )
                 print(Utility.bcolors.OKGREEN + "[Database.__init__][SUCCESS]{e}".format(e=entry))
             except Utility.InvalidDataException as e_data:
                 print(Utility.bcolors.WARNING + e_data.message)
@@ -35,8 +36,10 @@ class Database(DateType):
         Number of transaction entries created: " + str(self.number_of_entries) + "\n\
         Number of transaction targets created: " + str(self.number_of_targets))
 
-    
-    def generate_key(self, date):
+    def child_factory(self, key, n):
+        return Year(key, n) 
+
+    def datetime_to_key(self, date):
         return self.x * date.year + Year.x * date.month + Month.x * date.day
 
     def get_all(self):
@@ -56,11 +59,10 @@ class Database(DateType):
         month = self.get_month(year, month)
         return month.get_child(day)
 
-    def add_entry( self, entry ):
-        key = self.generate_key(entry.date)
+    def add_entry( self, entry, key):
         c = self.get_child(key)
-        c.add_entry(entry)
-        self.children[key] = c
+        c.add_entry(entry, key)
+        self.children[c.key] = c
         self.entries.append(entry)
         self.number_of_entries += 1
 

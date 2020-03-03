@@ -1,58 +1,64 @@
 
-#import matplotlib.pyplot as plt
+import numpy as np
 from Entry import Entry
 from Date import DateType
+from Date import Day
 import Utility as util
 
 class DataProcessor:
     def __init__(self):
         self.data = None
-        self.incomes    = {}
-        self.expenses   = {}
-        self.netsum     = {}
+        self.transactions   = {}
+        self.incomes        = {}
+        self.expenses       = {}
+        self.netsum         = {}
         
 
     def set_data(self, data):
-        if type(data) == type(dict):
+        if isinstance(data, list):
             self.data = data
-        elif type(data) == type(DateType):
-            self.data = { data.n : data }
+        elif isinstance(data, dict):
+            self.data = data.values()
+        elif isinstance(data, DateType):
+            self.data = [data]
         else:
             return False
         return True
 
 
     def process(self):
-        for n, obj in self.data:
-            self.__calculate_incomes_and_expenses(obj)
+        for item in self.data:
+
+            # resurcion break condition
+            if not isinstance(item, DateType) or isinstance(item, Day):
+                break
+
+            self.__save_transactions(item)
+            self.__calculate_incomes_and_expenses(item)
+            #
+            # CALCULATE OTHER STUFF
+            #
+
+            # process children recursively
+            self.set_data(item.children)        
+            self.process()
 
 
-    def __calculate_incomes_and_expenses(self, obj):
-        data = self.data
-        incomes     = None
-        expenses    = None 
-        netsum      = None
-        for entry in obj.entries:
-            pass
+    def __save_transactions(self, item):
+        targets = util.justify_list_items(item.entries)
+        t = []
+        for ii, e in enumerate(item.entries):
+            e_str = e.get_date() + "\t" + targets[ii] + e.get_val_str()
+            t.append(e_str)
+        self.transactions[item.key_str] = t
 
 
-
-    def __calculate_incomes_and_expenses(self):
-        data = self.data
-        incomes     = None
-        expenses    = None 
-        netsum      = None
-
-        for key, value in data.items():
-            for entry in value.entries:
-                val = entry.val
-                if val < 0:
-                    expenses += val
-                else:
-                    incomes += val
-            netsum = incomes + expenses
-            util.dict_plus_equals_value(self.incomes, key, incomes)
-            util.dict_plus_equals_value(self.expenses, key, expenses)
-            util.dict_plus_equals_value(self.netsum, key, netsum)
-
+    def __calculate_incomes_and_expenses(self, item):
+        fx_extract = np.vectorize(lambda x: x.val)
+        e = np.array(item.entries)
+        values = fx_extract(e)
+        self.expenses[item.key_str] = np.sum(values[values < 0] )
+        self.incomes[item.key_str]  = np.sum(values[values >= 0])
+        self.netsum[item.key_str]   = np.sum(values)
+        
 

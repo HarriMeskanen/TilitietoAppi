@@ -1,6 +1,5 @@
 from datetime import datetime
 from colorama import init
-import Analytics
 
 init()
 
@@ -32,9 +31,10 @@ def dict_plus_equals_value(container, key, value):
 
 def justify_list_items( lst, format_char = " " ):
     key_max_length = len(max(lst, key = len))
+    justified = []
     for item in lst:
-        item.targetName = item.targetName + format_char * ( key_max_length - len(item) )
-    return lst
+        justified.append( item.targetName + format_char * ( key_max_length - len(item) ) ) 
+    return justified
 
 
 def get_entry_data( raw_data ):
