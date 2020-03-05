@@ -15,7 +15,7 @@ def main(filename=None):
     db = Database( data )
 
     prcsr = DataProcessor()
-    prcsr.set_data( db.get_all() )
+    prcsr.set_data( db )
     prcsr.process()
 
     io.write_dict_to_file(prcsr.transactions, "catalog_")

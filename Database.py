@@ -1,5 +1,5 @@
 
-from Entry import Entry
+from Transaction import Transaction
 from Target import Target
 from Date import DateType, Year, Month, Day
 import Utility 
@@ -10,20 +10,20 @@ class Database(DateType):
     x = 10000
     def __init__( self, data ):
         super(Database, self).__init__(0)
-        self.number_of_entries  = 0
+        self.number_of_transactions  = 0
         self.number_of_targets  = 0
         self.key_max_length     = 0
     
         for data_row in data:
             try:
                 # parse date
-                date, val, targetName =  Utility.get_entry_data(data_row)
-                # create new entry
-                entry = Entry(date, val, targetName)
-                # add entry to database
-                entry_key = self.datetime_to_key(entry.date)
-                self.add_entry( entry, entry_key )
-                print(Utility.bcolors.OKGREEN + "[Database.__init__][SUCCESS]{e}".format(e=entry))
+                date, val, target =  Utility.get_transaction_data(data_row)
+                # create new transaction
+                transaction = Transaction(date, val, target)
+                # add transaction to database
+                transaction_key = self.datetime_to_key(transaction.date)
+                self.add_transaction( transaction, transaction_key )
+                print(Utility.bcolors.OKGREEN + "[Database.__init__][SUCCESS]{e}".format(e=transaction))
             except Utility.InvalidDataException as e_data:
                 print(Utility.bcolors.WARNING + e_data.message)
                 print(Utility.bcolors.FAIL + "[Database.__init__][FAILURE]{dr}".format(dr=data_row))
@@ -33,7 +33,7 @@ class Database(DateType):
                 print( Utility.bcolors.FAIL + str(e.args) )
 
         print(Utility.bcolors.OKBLUE + "[Database.__init__][COMPLETE] Database build finished.\n\
-        Number of transaction entries created: " + str(self.number_of_entries) + "\n\
+        Number of transaction transactions created: " + str(self.number_of_transactions) + "\n\
         Number of transaction targets created: " + str(self.number_of_targets))
 
     def child_factory(self, key, n):
@@ -59,11 +59,11 @@ class Database(DateType):
         month = self.get_month(year, month)
         return month.get_child(day)
 
-    def add_entry( self, entry, key):
+    def add_transaction( self, transaction, key):
         c = self.get_child(key)
-        c.add_entry(entry, key)
+        c.add_transaction(transaction, key)
         self.children[c.key] = c
-        self.entries.append(entry)
-        self.number_of_entries += 1
+        self.transactions.append(transaction)
+        self.number_of_transactions += 1
 
 

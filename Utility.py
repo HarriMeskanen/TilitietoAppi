@@ -33,37 +33,37 @@ def justify_list_items( lst, format_char = " " ):
     key_max_length = len(max(lst, key = len))
     justified = []
     for item in lst:
-        justified.append( item.targetName + format_char * ( key_max_length - len(item) ) ) 
+        justified.append( item.target + format_char * ( key_max_length - len(item) ) ) 
     return justified, key_max_length
 
 
-def get_entry_data( raw_data ):
-    lst_entry = raw_data.split("\t")
-    if len(lst_entry) < 5: 
-        raise InvalidDataException("Data contains invalid number of elements: " + str(lst_entry))
+def get_transaction_data( raw_data ):
+    lst_transaction = raw_data.split("\t")
+    if len(lst_transaction) < 5: 
+        raise InvalidDataException("Data contains invalid number of elements: " + str(lst_transaction))
 
     try:
-        date = lst_entry[2]
+        date = lst_transaction[2]
         date = datetime.strptime(date, '%d.%m.%Y') 
     except Exception:
-        raise InvalidDataException("Unable to create date object from string: " + lst_entry[2])
+        raise InvalidDataException("Unable to create date object from string: " + lst_transaction[2])
 
     try:
-        val = lst_entry[3]
+        val = lst_transaction[3]
         val = val.replace(",", ".")
         val = float(val)
     except Exception: 
-        raise InvalidDataException("Invalid transaction value: " + lst_entry[3])
+        raise InvalidDataException("Invalid transaction value: " + lst_transaction[3])
 
     try:
-        targetName = lst_entry[4]
-        if targetName == "":
-            raise InvalidDataException("Invalid transaction target: " + lst_entry[4])
+        target = lst_transaction[4]
+        if target == "":
+            raise InvalidDataException("Invalid transaction target: " + lst_transaction[4])
         
     except Exception: 
-        raise InvalidDataException("Invalid transaction target: " + lst_entry[4])
+        raise InvalidDataException("Invalid transaction target: " + lst_transaction[4])
 
-    return date, val, targetName
+    return date, val, target
 
         
 

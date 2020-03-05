@@ -11,8 +11,8 @@ class DateType:
         self.n = n
         # Map<date_key, DateType>, sub datetypes e.g. this==Month --> children are Days
         self.children   = {}
-        # List<Entry>, entries created during datetype(this) period
-        self.entries    = []
+        # List<Transaction>, transactions created during datetype(this) period
+        self.transactions    = []
 
     def __str__(self):
         return self.key_str
@@ -62,16 +62,16 @@ class DateType:
             self.__add_new_child(child_key)
         return self.children[child_key]
 
-    def add_entry(self, entry, key):
+    def add_transaction(self, transaction, key):
         if self.__key_is_self(key):
-            self.entries.append(entry)
+            self.transactions.append(transaction)
             return
         
         elif self.__key_is_descendant(key):
             c = self.get_child(key)
-            c.add_entry(entry, key)
+            c.add_transaction(transaction, key)
             self.children[c.key] = c
-            self.entries.append(entry)
+            self.transactions.append(transaction)
 
         else:
             return # shouldn't go here, ever

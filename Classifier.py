@@ -1,6 +1,6 @@
 from scipy.stats import multivariate_normal
 import numpy as np
-from Entry import Entry
+from Transaction import Transaction
 
 
 class CategoryClassifier:
@@ -18,7 +18,7 @@ class CategoryClassifier:
     def __extract_features(self, d):
         day = d.date.day 
         val = d.val 
-        key_array = d.targetName.encode()
+        key_array = d.target.encode()
         keyval = sum(key_array)
         nkey = len(key_array)
         return [day, val, keyval, nkey]
@@ -27,13 +27,13 @@ class CategoryClassifier:
         pass
 
     def train(self, data, label):
-        if isinstance(data, Entry):
+        if isinstance(data, Transaction):
             f = np.array(self.__extract_features(data))
             self.data[label] = np.vstack(( self.data[label], f ))
 
         elif isinstance(data, list):
-            for ii, entry in enumerate(data):
-                f = np.array(self.__extract_features(entry))
+            for ii, transaction in enumerate(data):
+                f = np.array(self.__extract_features(transaction))
                 label_ii = label[ii]
                 self.data[label_ii] = np.vstack(( self.data[label_ii], f ))
         
