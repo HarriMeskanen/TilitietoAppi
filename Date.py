@@ -1,15 +1,15 @@
 import numpy as np
-
+import Utility as util
 
 class DateType:
     # self mask
     S = np.zeros(3)
     # child mask
     C = np.zeros(3)
-    def __init__(self, key=None, n=None):
+    def __init__(self, key):
         # e.g. np.array( [1992, 6, 23] )
         self.key  = key
-        self.key_str = self.key_to_str(key)
+        self.key_str = DateType.key_to_str(key)
         # Map<date_key, DateType>, sub datetypes e.g. this==Month --> children are Days
         self.children   = {}
         # List<Transaction>, transactions created during datetype(this) period
@@ -23,11 +23,10 @@ class DateType:
     def __str__(self):
         return self.key_str
 
-
-    def key_to_str(self, key):
+    @staticmethod
+    def key_to_str(key):
         key_nonzero = key[key > 0]
         return ".".join(key_nonzero.astype(int).astype(str))
-    
 
     # generate key for nth child EITHER from int or key
     def get_child_key(self, n_or_key):
@@ -40,7 +39,7 @@ class DateType:
 
     # is excisting child !!!
     def __is_child(self, key):
-        return self.key_to_str(key) in self.children 
+        return DateType.key_to_str(key) in self.children 
 
 
     def get_child(self, key):
@@ -50,7 +49,7 @@ class DateType:
         
         # if not me then create key for child
         child_key = self.get_child_key(key)
-        child_key_str = self.key_to_str(child_key)
+        child_key_str = DateType.key_to_str(child_key)
 
         # create new if child doesnt exist yet
         if not self.__is_child(child_key):
@@ -70,7 +69,7 @@ class DateType:
         
         # if key is no me then it is one my children
         child_key = self.get_child_key(key)
-        child_key_str = self.key_to_str(child_key)
+        child_key_str = DateType.key_to_str(child_key)
 
         # create new if child doesnt exist yet
         if not self.__is_child(child_key):

@@ -1,4 +1,5 @@
 from datetime import datetime
+import numpy as np
 from colorama import init
 
 init()
@@ -18,8 +19,6 @@ class InvalidDataException(Exception):
     def __init__(self, message):
         self.message = "[InvalidDataException]" + message
 
-
- 
 
 def dict_plus_equals_value(container, key, value):
         if key in container: 

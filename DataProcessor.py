@@ -8,64 +8,42 @@ from DataStructure import DataStructure
 
 class DataProcessor:
     def __init__(self):
-        self.data = None
-        self.dataStructures = np.array
-        self.transactions   = {}
-        self.incomes        = {}
-        self.expenses       = {}
-        self.netsum         = {}
+        pass
+
+
+    def process(self, data):
         
+        print(util.bcolors.ENDC + "[DataProcessor] Processing data object from time period " + data.key_str)
+        ds = DataStructure(data)
+        ds.incomes, ds.expenses, ds.netsum = self.__calculate_incomes_and_expenses(data.transactions)
+        ds.catalog = self.__save_catalog(data.transactions, ds.incomes, ds.expenses, ds.netsum)
 
-    def set_data(self, data):
-        if isinstance(data, list):
-            self.data = data
-        elif isinstance(data, dict):
-            self.data = data.values()
-        elif isinstance(data, DateType):
-            self.data = [data]
-        else:
-            return False
-        return True
+        for child in data.children.values():
+            ds.children.append( self.process(child) )
         
+        return ds
 
 
-    def process(self):
-        for item in self.data:
-
-            # resurcion break condition
-            if not isinstance(item, DateType) or isinstance(item, Day):
-                break
-
-            self.__calculate_incomes_and_expenses(item)
-            self.__save_transactions(item)
-            #
-            # CALCULATE OTHER STUFF
-            #
-
-            # process children recursively
-            self.set_data(item.children)        
-            self.process()
-
-
-    def __save_transactions(self, item):
-        targets, kml = util.justify_list_items(item.transactions)
+    def __save_catalog(self, transactions, incomes, expenses, netsum):
+        targets, kml = util.justify_list_items(transactions)
         ts = []
-        for ii, t in enumerate(item.transactions):
+        for ii, t in enumerate(transactions):
             t_str = t.get_date() + "\t" + targets[ii] + t.get_val_str()
             ts.append(t_str)
         ts.append("--" * kml)
-        ts.append("INCOMES " + " " * kml + "\t+" + str(format(self.incomes[item.key_str],  '.2f')))
-        ts.append("EXPENSES" + " " * kml + "\t"  + str(format(self.expenses[item.key_str], '.2f')))
-        ts.append("SUM     " + " " * kml + "\t"  + str(format(self.netsum[item.key_str],   '.2f')))
-        self.transactions[item.key_str] = ts
+        ts.append("INCOMES " + " " * kml + "\t+" + str(format(incomes,  '.2f')))
+        ts.append("EXPENSES" + " " * kml + "\t"  + str(format(expenses, '.2f')))
+        ts.append("SUM     " + " " * kml + "\t"  + str(format(netsum,   '.2f')))
+        return ts
 
 
-    def __calculate_incomes_and_expenses(self, item):
+    def __calculate_incomes_and_expenses(self, transactions):
         fx_extract = np.vectorize(lambda x: x.val)
-        t = np.array(item.transactions)
+        t = np.array(transactions)
         values = fx_extract(t)
-        self.expenses[item.key_str] = np.sum(values[values < 0] )
-        self.incomes[item.key_str]  = np.sum(values[values >= 0])
-        self.netsum[item.key_str]   = np.sum(values)
+        expenses = np.sum(values[values < 0] )
+        incomes  = np.sum(values[values >= 0])
+        netsum   = np.sum(values)
+        return incomes, expenses, netsum
         
 
