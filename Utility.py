@@ -1,4 +1,6 @@
 from datetime import datetime
+import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 from colorama import init
 
@@ -65,4 +67,31 @@ def get_transaction_data( raw_data ):
     return date, val, target
 
         
+def bar_chart_factory( title, labels, incomes, expenses ):    
+    nlabels = len(labels)    
+    if nlabels == 0:
+        return
+    x = np.arange(nlabels)
+    width = 0.35
+    fig, ax = plt.subplots()
+    ax = autolabel(ax, ax.bar( x - width/2, incomes, width, label='Incomes' ))
+    ax = autolabel(ax, ax.bar( x + width/2, expenses, width, label='Expenses' ))
+    ax.set_title( title )
+    ax.set_ylabel('Incomes/Expenses')
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels)
+    ax.legend()
+    fig.tight_layout()
+    return fig
 
+
+def autolabel(ax, rects):
+    """Attach a text label above each bar in *rects*, displaying its height."""
+    for rect in rects:
+        height = rect.get_height()
+        ax.annotate('{}'.format(height),
+                    xy=(rect.get_x() + rect.get_width() / 2, height),
+                    xytext=(0, 3),  # 3 points vertical offset
+                    textcoords="offset points",
+                    ha='center', va='bottom')
+    return ax
