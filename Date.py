@@ -1,5 +1,7 @@
 import numpy as np
 import Utility as util
+import Transaction
+import Target
 
 class DateType:
     # self mask
@@ -10,11 +12,10 @@ class DateType:
         # e.g. np.array( [1992, 6, 23] )
         self.key  = key
         self.key_str = DateType.key_to_str(key)
+        self.transactions = Transaction.TransactionContainer()
+        self.targets = Target.TargetContainer()
         # Map<date_key, DateType>, sub datetypes e.g. this==Month --> children are Days
         self.children   = {}
-        # List<Transaction>, transactions created during datetype(this) period
-        self.transactions    = []
-
 
     def child_factory(self, key):
         return 0
@@ -61,7 +62,8 @@ class DateType:
 
     def add_transaction(self, transaction, key):
         # add transaction to parent's transactions too... 
-        self.transactions.append(transaction)
+        self.transactions.add_transaction(transaction)        
+        self.targets.add_transaction(transaction)
 
         # break iteration if key is me
         if self.__is_self(key):            
@@ -77,7 +79,6 @@ class DateType:
 
         # iterate recursively
         self.children[child_key_str].add_transaction(transaction, key)
-        
 
 
 
@@ -85,7 +86,7 @@ class Year(DateType):
     S = np.array(( 1, 0, 0 ))
     C = np.array(( 0, 1, 0 ))
     def __init__(self, key):
-        super(Year, self).__init__(key)  
+        super(Year, self).__init__(key)
 
 
     def child_factory(self, key):
