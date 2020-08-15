@@ -10,7 +10,7 @@ class IO:
         pass
 
     def set_root(self, filepath):
-        self.root = os.path.dirname(os.path.realpath(filepath))
+        self.root = os.path.dirname(os.path.realpath(filepath)) + "\\"
 
 
     def get_data(self, file):
@@ -27,32 +27,36 @@ class IO:
         return content
 
 
-    def save_output(self, data, fpath):
+    def save_data(self, data, path_rel):
         
         # if filepath doesnt exist create folder
-        if not os.path.exists(fpath):
-            os.makedirs(fpath)
+        dir = self.root + path_rel
 
-        fname = fpath + '\\' + data.key
-        self.write_list_to_file( data.catalog, fname  + '_catalog.txt')
-        self.save_incomes_expenses_as_barchart( data.key, data.children, fname + '_bar_chart.png')
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+        
+        file_prefix = data.key_str
+
+        self.save_log( data.transactions.get_transaction_log(data.targets.key_max_length), dir + file_prefix  + '_transactions.txt')
+        self.save_log( data.targets.get_target_log(), dir + file_prefix  + '_transaction_targets.txt')
+        self.save_incomes_expenses_as_barchart( data.key_str, data.children, dir + file_prefix + '_incomes-and-expenses.png')
 
 
-        for child in data.children:
-            self.save_output(child, fpath + '\\' + child.key)
+        for child in data.children.values():
+            self.save_data(child, path_rel + child.key_str + "\\")
 
 
-    def save_incomes_expenses_as_barchart(self, title, lst, fpath):
+    def save_incomes_expenses_as_barchart(self, title, children, fpath):
         labels      = []
         incomes     = []
         expenses    = []
         netsum      = []
 
-        for elem in lst:
-            labels.append(elem.key.split('.')[-1])
-            incomes.append(int(elem.incomes))
-            expenses.append(int(elem.expenses * -1))
-            netsum.append(int(elem.netsum))
+        for child in children.values():
+            labels.append(child.key_str.split('.')[-1])
+            incomes.append(int(child.transactions.incomes))
+            expenses.append(int(child.transactions.expenses * -1))
+            netsum.append(int(child.transactions.netsum))
         
         fig = util.bar_chart_factory(title, labels, incomes, expenses)
         if fig != None:            
@@ -62,7 +66,7 @@ class IO:
 
 
 
-    def write_list_to_file(self, lst, fpath):
+    def save_log(self, log, fpath):
         # check filename for different call types
 
         if '.' not in fpath:
@@ -71,10 +75,8 @@ class IO:
         # open file for write
         file = open( fpath, "w", encoding="utf-8")
 
-        # write list elements to file
-        for elem in lst:
-            row = elem + "\n"
-            file.write( row )
+        # save log
+        file.write( log )
 
         # close file
         file.close()
