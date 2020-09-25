@@ -1,9 +1,14 @@
 import sys
+import os
+sys.path.append("C:\\Users\\meskaha\\Documents\\Python\\ML")
+
+import numpy as np
 import time
 from Database import Database
 from ipop import IO
 import Utility as util
 
+#import Clustering
 
 __DEBUG__ = True
 
@@ -16,8 +21,10 @@ def main(filename=None):
     time.sleep(1)
 
     # create database
-    data = io.get_data( filename )
-    db   = Database( data )    
+    data_list, data_array = io.get_data( filename )
+    #ci, cm = k_means(data_array, 10)
+
+    db = Database( data_list )
     print(util.bcolors.OKGREEN + "...\n[COMPLETE] Database build finished\
     \nNumber of transactions saved: " + str(len(db.transactions)) +
     "\nTime period: " + str(db.t0) + " - " + str(db.tk))
@@ -38,5 +45,5 @@ if __name__ == "__main__":
     except:
         if __DEBUG__:
             main("2019.txt")
-        else:
-            main(input("Path to tilitapahtumat:"))
+    else:
+        main(input("Path to tilitapahtumat:"))

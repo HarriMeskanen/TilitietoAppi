@@ -2,7 +2,7 @@
 from Transaction import Transaction
 from Target import Target
 from Date import DateType, Year, Month, Day
-import Utility 
+import Utility as util
 from datetime import datetime
 import numpy as np
 
@@ -16,30 +16,31 @@ class Database(DateType):
         self.t0 = None
         self.tk = None
     
-        for data_row in data:
-            try:
-                # parse date
-                date, val, target_name =  Utility.get_transaction_data(data_row)
-                
-                # see if this is youngest of oldest transaction instance
-                self.update_date_limits(date)
-                
-                # create new transaction
-                transaction = Transaction(date, val, target_name)
+        for data_item in data:
+            if len(data_item) == 3:
+                date, val, target_name = data_item[0], data_item[1], data_item[2]
+                transaction_category = None
 
-                # add transaction to database
-                transaction_key = self.datetime_to_key(transaction.date)
-                self.add_transaction( transaction, transaction_key )
-                print(Utility.bcolors.ENDC + "New Transaction {t}".format(t=transaction))
+            # data also contains category
+            elif len(data_item) == 4:
+                date, val, target_name, transaction_category = data_item[0], data_item[1], data_item[2], data_item[3]
 
-
-            except Utility.InvalidDataException as e_data:
-                print(Utility.bcolors.WARNING + e_data.message)
-                print(Utility.bcolors.FAIL + "{dr}".format(dr=data_row))
+            else: 
+                print(util.bcolors.WARNING + "Unexpected data item: " + data_item)
                 continue
+            
+            # see if this is youngest of oldest transaction instance
+            self.update_date_limits(date)
+            
+            # create new transaction
+            transaction = Transaction(date, val, target_name, transaction_category)
 
-            except Exception as e:
-                print( Utility.bcolors.FAIL + str(e.args) )
+            # add transaction to database
+            transaction_key = self.datetime_to_key(transaction.date)
+            self.add_transaction( transaction, transaction_key )
+            print(util.bcolors.ENDC + "New Transaction {t}".format(t=transaction))
+
+
 
 
     def child_factory(self, key):

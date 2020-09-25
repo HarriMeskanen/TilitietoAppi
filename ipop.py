@@ -6,25 +6,53 @@ import numpy as np
 
 # input output
 class IO:
+
     def __init__(self):
         pass
+
+
 
     def set_root(self, filepath):
         self.root = os.path.dirname(os.path.realpath(filepath)) + "\\"
 
 
+
     def get_data(self, file):
-        content = []
+
+        # List< List<data> >
+        transaction_data_list = []
+        # List< np.Array > 
+        category_data_list = []
+
         try:
             file = open( file, "r", encoding="utf-8")
         except:
             print(util.bcolors.FAIL + "File: " + file + " not found. Exiting.")
             return
+
         for row in file:
-            if row != "\n":
-                content.append(row)
+
+            try:
+                # data[0] == date, data[1] == value, data[2] == target
+                transaction_data = util.to_transaction_data(row)
+                if transaction_data is not None:
+                    transaction_data_list.append( transaction_data )
+                    category_data_list.append( util.pre_process( transaction_data ) )
+
+            except util.InvalidDataException as e_data:
+                print(util.bcolors.WARNING + e_data.message)
+                print(util.bcolors.FAIL + "{dr}".format(dr=row))
+                continue
+
+            except Exception as e:
+                print( util.bcolors.FAIL + str(e.args) )
+
         file.close()
-        return content
+
+        category_data_array = np.array( category_data_list )
+
+        return transaction_data_list, category_data_array
+
 
 
     def save_data(self, data, path_rel):
@@ -46,6 +74,7 @@ class IO:
             self.save_data(child, path_rel + child.key_str + "\\")
 
 
+
     def save_incomes_expenses_as_barchart(self, title, children, fpath):
         labels      = []
         incomes     = []
@@ -61,8 +90,6 @@ class IO:
         fig = util.bar_chart_factory(title, labels, incomes, expenses)
         if fig != None:            
             fig.savefig(fpath)
-
-
 
 
 

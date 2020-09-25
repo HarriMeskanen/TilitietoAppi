@@ -39,13 +39,15 @@ class TransactionContainer:
 
 
 class Transaction:
-    def __init__(self, date, val, target):
+    def __init__(self, date, val, target, category=None):
         # datetime
         self.date   = date
         # float
         self.val    = float(val)
         # str
         self.target = target
+        # str
+        self.category = category
 
     def __str__(self):
         return self.date.strftime('%d.%m.%Y') + "\t" + self.target + "\t" + str(format(self.val, '.2f'))

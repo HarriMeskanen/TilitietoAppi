@@ -1,10 +1,13 @@
 from datetime import datetime
+from enum import Enum
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from colorama import init
 
+ 
 init()
+
 
 class bcolors:
     HEADER = '\033[95m'
@@ -17,9 +20,15 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 
+class RUN_TYPE(Enum):
+    TRAIN = 0,
+    TEST = 1
+
+
 class InvalidDataException(Exception): 
     def __init__(self, message):
         self.message = "[InvalidDataException]" + message
+
 
 
 def dict_plus_equals_value(container, key, value):
@@ -30,6 +39,7 @@ def dict_plus_equals_value(container, key, value):
             container[key] = value   
 
 
+
 def justify_list_items( lst, format_char = " " ):
     key_max_length = len(max(lst, key = len))
     justified = []
@@ -38,35 +48,28 @@ def justify_list_items( lst, format_char = " " ):
     return justified, key_max_length
 
 
-def get_transaction_data( raw_data ):
+
+def to_transaction_data( raw_data ):
     lst_transaction = raw_data.split("\t")
-    if len(lst_transaction) < 5: 
-        raise InvalidDataException("Data contains invalid number of elements: " + str(lst_transaction))
 
     try:
+
         date = lst_transaction[2]
-        date = datetime.strptime(date, '%d.%m.%Y') 
-    except Exception:
-        raise InvalidDataException("Unable to create date object from string: " + lst_transaction[2])
+        date = datetime.strptime(date, '%d.%m.%Y')
 
-    try:
         val = lst_transaction[3]
         val = val.replace(",", ".")
         val = float(val)
-    except Exception: 
-        raise InvalidDataException("Invalid transaction value: " + lst_transaction[3])
 
-    try:
         target = lst_transaction[4]
-        if target == "":
-            raise InvalidDataException("Invalid transaction target: " + lst_transaction[4])
-        
-    except Exception: 
-        raise InvalidDataException("Invalid transaction target: " + lst_transaction[4])
 
-    return date, val, target
+    except Exception:
+        return None
+
+    return [date, val, target]
 
         
+
 def bar_chart_factory( title, labels, incomes, expenses ):    
     nlabels = len(labels)    
     if nlabels == 0:
@@ -85,6 +88,7 @@ def bar_chart_factory( title, labels, incomes, expenses ):
     return fig
 
 
+
 def autolabel(ax, rects):
     """Attach a text label above each bar in *rects*, displaying its height."""
     for rect in rects:
@@ -95,3 +99,22 @@ def autolabel(ax, rects):
                     textcoords="offset points",
                     ha='center', va='bottom')
     return ax
+    
+
+
+# convert data fields to numerical values
+# in 1 by 3 PythonList[<String>, <Float>, <String>]
+# out 1 by 54 (day, month, year, value, 50xFloat) NumPyArray
+def pre_process(data):
+
+    processed = np.zeros( 32, dtype=np.int32 )
+
+    # disregard upper cases 
+    target_str = data[2].lower()
+    # convert target to 50 int values
+    target_chr_lst = list(target_str)
+    fx = np.vectorize(ord)
+    target_int_lst = fx(target_chr_lst)
+    processed[0 : min(  len(target_int_lst), len(processed) )] = target_int_lst
+
+    return processed
